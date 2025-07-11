@@ -31,7 +31,7 @@ cd bash-to-deb-converter
 
 2. Make the script executable:
 ```bash
-chmod +x bash_to_deb.sh
+chmod +x To_DEB.sh
 ```
 
 ## 📖 Usage
@@ -39,13 +39,13 @@ chmod +x bash_to_deb.sh
 ### Basic Usage
 
 ```bash
-./bash_to_deb.sh -s your_script.sh -n package-name
+./To_DEB.sh -s your_script.sh -n package-name
 ```
 
 ### Advanced Usage
 
 ```bash
-./bash_to_deb.sh -s backup_tool.sh -n backup-tool \
+./To_DEB.sh -s backup_tool.sh -n backup-tool \
   -v 2.1.0 \
   -d "Automated backup utility for system files" \
   -m "Your Name <your.email@example.com>" \
@@ -90,7 +90,7 @@ package_name_version_arch.deb
 
 ```bash
 # Convert a backup script
-./bash_to_deb.sh -s backup.sh -n my-backup-tool
+./To_DEB.sh -s backup.sh -n my-backup-tool
 ```
 
 **Output:** `./deb_packages/my-backup-tool_1.0.0_all.deb`
@@ -99,7 +99,7 @@ package_name_version_arch.deb
 
 ```bash
 # Create a production package with full metadata
-./bash_to_deb.sh \
+./To_DEB.sh \
   -s system-monitor.sh \
   -n system-monitor \
   -v 1.2.3 \
@@ -116,7 +116,7 @@ package_name_version_arch.deb
 
 ```bash
 # Install to a custom location
-./bash_to_deb.sh \
+./To_DEB.sh \
   -s admin-tools.sh \
   -n admin-tools \
   -p "/opt/admin/bin" \
@@ -186,7 +186,7 @@ dpkg-deb --extract package-name_version_arch.deb extracted/
 
 3. **"Permission denied"**
    ```bash
-   chmod +x bash_to_deb.sh
+   chmod +x To_DEB.sh
    ```
 
 4. **"Script file not found"**
