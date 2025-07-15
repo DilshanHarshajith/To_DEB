@@ -8,6 +8,7 @@ set -e  # Exit on any error
 # Default values
 SCRIPT_FILE=""
 PACKAGE_NAME=""
+SCRIPT_NAME=""  # New variable for the actual script name
 VERSION="1.0.0"
 DESCRIPTION="Converted bash script"
 MAINTAINER="$(whoami) <$(whoami)@localhost>"
@@ -42,10 +43,12 @@ usage() {
     echo "  -p, --path PATH          Install path (default: /usr/local/bin)"
     echo "  -a, --arch ARCH          Architecture (default: all)"
     echo "  -o, --output DIR         Output directory (default: ./deb_packages)"
+    echo "  -S, --script-name NAME   Name for the installed script (default: derived from package name)"
     echo "  -h, --help               Show this help message"
     echo ""
     echo "Example:"
     echo "  $0 -s my_script.sh -n my-package -v 1.2.3 -d 'My awesome script'"
+    echo "  $0 -s fakeap.sh -n fakeap-tool -S fakeap  # Package named 'fakeap-tool', script named 'fakeap'"
 }
 
 # Function to log messages
@@ -78,6 +81,23 @@ validate_package_name() {
         return 1
     fi
     return 0
+}
+
+# Function to derive script name from package name
+derive_script_name() {
+    local pkg_name=$1
+    # Remove common suffixes and clean up the name
+    local clean_name="$pkg_name"
+    
+    # Remove .deb suffix if present
+    clean_name="${clean_name%.deb}"
+    
+    # Remove -tool, -script, -app suffixes if present
+    clean_name="${clean_name%-tool}"
+    clean_name="${clean_name%-script}"
+    clean_name="${clean_name%-app}"
+    
+    echo "$clean_name"
 }
 
 # Function to check if required tools are installed
@@ -143,7 +163,7 @@ EOF
 
     # Replace placeholders in postinst
     sed -i "s|INSTALL_PATH_PLACEHOLDER|$INSTALL_PATH|g" "$debian_dir/postinst"
-    sed -i "s|SCRIPT_NAME_PLACEHOLDER|$PACKAGE_NAME|g" "$debian_dir/postinst"
+    sed -i "s|SCRIPT_NAME_PLACEHOLDER|$SCRIPT_NAME|g" "$debian_dir/postinst"
     
     # Make postinst executable
     chmod 755 "$debian_dir/postinst"
@@ -155,14 +175,14 @@ set -e
 
 # Remove alternatives if they were set
 if [ "$1" = "remove" ]; then
-    echo "Removing PACKAGE_NAME_PLACEHOLDER..."
+    echo "Removing SCRIPT_NAME_PLACEHOLDER..."
 fi
 
 exit 0
 EOF
 
     # Replace placeholders in prerm
-    sed -i "s|PACKAGE_NAME_PLACEHOLDER|$PACKAGE_NAME|g" "$debian_dir/prerm"
+    sed -i "s|SCRIPT_NAME_PLACEHOLDER|$SCRIPT_NAME|g" "$debian_dir/prerm"
     
     # Make prerm executable
     chmod 755 "$debian_dir/prerm"
@@ -171,7 +191,7 @@ EOF
 # Function to copy and prepare the script
 prepare_script() {
     local build_dir=$1
-    local target_script="$build_dir$INSTALL_PATH/$PACKAGE_NAME"
+    local target_script="$build_dir$INSTALL_PATH/$SCRIPT_NAME"
     
     # Copy the script to the target location
     cp "$SCRIPT_FILE" "$target_script"
@@ -261,6 +281,10 @@ while [[ $# -gt 0 ]]; do
             OUTPUT_DIR="$2"
             shift 2
             ;;
+        -S|--script-name)
+            SCRIPT_NAME="$2"
+            shift 2
+            ;;
         -h|--help)
             usage
             exit 0
@@ -286,6 +310,11 @@ if [ ! -f "$SCRIPT_FILE" ]; then
     exit 1
 fi
 
+# Set script name if not provided
+if [ -z "$SCRIPT_NAME" ]; then
+    SCRIPT_NAME=$(derive_script_name "$PACKAGE_NAME")
+fi
+
 # Validate package name
 if ! validate_package_name "$PACKAGE_NAME"; then
     exit 1
@@ -299,6 +328,7 @@ fi
 # Start the conversion process
 log "INFO" "Starting conversion of $SCRIPT_FILE to DEB package..."
 log "INFO" "Package name: $PACKAGE_NAME"
+log "INFO" "Script name: $SCRIPT_NAME"
 log "INFO" "Version: $VERSION"
 log "INFO" "Install path: $INSTALL_PATH"
 
@@ -317,6 +347,7 @@ prepare_script "$TEMP_DIR"
 if build_package "$TEMP_DIR"; then
     log "SUCCESS" "Conversion completed successfully!"
     log "INFO" "You can install the package with: sudo dpkg -i $OUTPUT_DIR/${PACKAGE_NAME}_${VERSION}_${ARCHITECTURE}.deb"
+    log "INFO" "After installation, run your script with: $SCRIPT_NAME"
 else
     log "ERROR" "Conversion failed!"
     exit 1
