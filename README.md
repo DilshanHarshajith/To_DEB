@@ -198,18 +198,3 @@ The script provides colorized output:
 ## License
 
 This project is open source. Feel free to modify and distribute.
-
-## Changelog
-
-### v2.0.0
-- Added smart script naming functionality
-- Separated package name from installed script name
-- Added `--script-name` option
-- Improved automatic name derivation
-- Fixed issue with `.deb` suffix in script names
-
-### v1.0.0
-- Initial release
-- Basic bash to DEB conversion
-- Configurable package metadata
-- Dependency handling
