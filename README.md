@@ -1,232 +1,215 @@
 # Bash to DEB Package Converter
 
-A comprehensive bash script that automatically converts any bash script into a proper Debian package (.deb) with all necessary metadata and installation scripts.
+A utility script that converts bash scripts into Debian (.deb) packages for easy installation and distribution.
 
-## 🚀 Features
+## Features
 
-- **Automatic DEB package creation** from bash scripts
-- **Proper Debian package structure** with control files
-- **Flexible installation paths** and package configuration
-- **Dependency management** support
-- **Post-installation scripts** for proper setup
-- **Input validation** and error handling
-- **Colored output** for better user experience
-- **Clean temporary file management**
+- 🚀 Convert any bash script to a proper Debian package
+- 📦 Automatic package structure generation
+- 🔧 Configurable installation paths and metadata
+- 🎯 Smart script naming (separates package name from script name)
+- ✨ Proper dependency handling
+- 🧹 Clean uninstallation support
+- 🎨 Colorized output for better user experience
 
-## 📋 Prerequisites
+## Prerequisites
 
-Before using this script, ensure you have the required tools installed:
+Install the required tools:
 
 ```bash
 sudo apt-get install dpkg-dev fakeroot
 ```
 
-## 🔧 Installation
-
-1. Clone this repository:
-```bash
-git clone https://github.com/yourusername/bash-to-deb-converter.git
-cd bash-to-deb-converter
-```
-
-2. Make the script executable:
-```bash
-chmod +x To_DEB.sh
-```
-
-## 📖 Usage
+## Usage
 
 ### Basic Usage
 
 ```bash
-./To_DEB.sh -s your_script.sh -n package-name
+./To_DEB.sh -s script.sh -n package-name
 ```
 
-### Advanced Usage
+### Full Example
 
 ```bash
-./To_DEB.sh -s backup_tool.sh -n backup-tool \
+./To_DEB.sh \
+  -s fakeap.sh \
+  -n fakeap-tool \
   -v 2.1.0 \
-  -d "Automated backup utility for system files" \
-  -m "Your Name <your.email@example.com>" \
-  -D "rsync, gzip, tar" \
-  -p "/usr/bin" \
-  -a "amd64" \
-  -o "./packages"
+  -d "WiFi Access Point creation tool" \
+  -m "user@example.com" \
+  -S fakeap
 ```
 
-### Command Line Options
+This creates a package named `fakeap-tool` that installs a script named `fakeap`.
 
-| Option | Short | Description | Default |
-|--------|-------|-------------|---------|
-| `--script` | `-s` | **Required.** Path to the bash script to convert | - |
-| `--name` | `-n` | **Required.** Package name (lowercase, no spaces) | - |
-| `--version` | `-v` | Package version | `1.0.0` |
-| `--description` | `-d` | Package description | `"Converted bash script"` |
-| `--maintainer` | `-m` | Maintainer email | `"$(whoami) <$(whoami)@localhost>"` |
-| `--depends` | `-D` | Dependencies (comma-separated) | - |
-| `--path` | `-p` | Install path for the script | `/usr/local/bin` |
-| `--arch` | `-a` | Target architecture | `all` |
-| `--output` | `-o` | Output directory for .deb file | `./deb_packages` |
-| `--help` | `-h` | Show help message | - |
+## Command Line Options
 
-## 📁 Package Structure
+### Required Options
 
-The script creates a proper Debian package with the following structure:
+| Option | Description |
+|--------|-------------|
+| `-s, --script FILE` | Path to the bash script to convert |
+| `-n, --name NAME` | Package name (lowercase, no spaces) |
 
-```
-package_name_version_arch.deb
-├── DEBIAN/
-│   ├── control          # Package metadata
-│   ├── postinst         # Post-installation script
-│   └── prerm            # Pre-removal script
-└── usr/local/bin/       # Default install location
-    └── package-name     # Your converted script
-```
+### Optional Options
 
-## 🎯 Examples
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-v, --version VERSION` | Package version | `1.0.0` |
+| `-d, --description DESC` | Package description | `"Converted bash script"` |
+| `-m, --maintainer EMAIL` | Maintainer email | `"$(whoami) <$(whoami)@localhost>"` |
+| `-D, --depends DEPS` | Dependencies (comma-separated) | None |
+| `-p, --path PATH` | Install path | `/usr/local/bin` |
+| `-a, --arch ARCH` | Architecture | `all` |
+| `-o, --output DIR` | Output directory | `./deb_packages` |
+| `-S, --script-name NAME` | Name for installed script | Auto-derived from package name |
+| `-h, --help` | Show help message | - |
 
-### Example 1: Simple Script Conversion
+## Smart Script Naming
+
+The script automatically derives clean script names from package names:
+
+- `fakeap.deb` → `fakeap`
+- `my-tool.deb` → `my-tool`
+- `awesome-script` → `awesome-script`
+- `network-tool` → `network` (removes `-tool` suffix)
+
+You can override this with the `-S` option:
 
 ```bash
-# Convert a backup script
-./To_DEB.sh -s backup.sh -n my-backup-tool
+./To_DEB.sh -s script.sh -n complex-package-name -S simple-name
 ```
 
-**Output:** `./deb_packages/my-backup-tool_1.0.0_all.deb`
+## Package Installation
 
-### Example 2: Production-Ready Package
-
-```bash
-# Create a production package with full metadata
-./To_DEB.sh \
-  -s system-monitor.sh \
-  -n system-monitor \
-  -v 1.2.3 \
-  -d "Real-time system monitoring tool with alerts" \
-  -m "DevOps Team <devops@company.com>" \
-  -D "curl, jq, bc" \
-  -p "/usr/bin" \
-  -a "amd64"
-```
-
-**Output:** `./deb_packages/system-monitor_1.2.3_amd64.deb`
-
-### Example 3: Custom Installation Path
-
-```bash
-# Install to a custom location
-./To_DEB.sh \
-  -s admin-tools.sh \
-  -n admin-tools \
-  -p "/opt/admin/bin" \
-  -d "Administrative utilities collection"
-```
-
-## 📦 Installing the Generated Package
-
-Once your DEB package is created, install it using:
+After creating the package:
 
 ```bash
 # Install the package
-sudo dpkg -i ./deb_packages/package-name_version_arch.deb
+sudo dpkg -i ./deb_packages/package-name_1.0.0_all.deb
 
-# Install dependencies if needed
-sudo apt-get install -f
-```
+# Run your script
+script-name
 
-## 🗑️ Removing the Package
-
-```bash
 # Remove the package
 sudo dpkg -r package-name
-
-# Remove package and configuration files
-sudo dpkg --purge package-name
 ```
 
-## ✅ Package Validation
+## Examples
 
-The script performs several validation checks:
-
-- **Package name format** - Ensures Debian naming conventions
-- **Script existence** - Verifies the source script exists
-- **Required tools** - Checks for `dpkg-deb` and `fakeroot`
-- **Shebang presence** - Adds `#!/bin/bash` if missing
-- **File permissions** - Sets proper executable permissions
-
-## 🔍 Package Information
-
-After creation, you can inspect your package:
+### Simple Conversion
 
 ```bash
-# View package information
-dpkg-deb --info package-name_version_arch.deb
-
-# List package contents
-dpkg-deb --contents package-name_version_arch.deb
-
-# Extract package contents
-dpkg-deb --extract package-name_version_arch.deb extracted/
+./To_DEB.sh -s backup.sh -n backup-tool
 ```
 
-## 🐛 Troubleshooting
+Creates: `backup-tool_1.0.0_all.deb`, installs script as `backup`
+
+### Advanced Configuration
+
+```bash
+./To_DEB.sh \
+  -s monitoring.sh \
+  -n system-monitor \
+  -v 3.2.1 \
+  -d "System monitoring utility" \
+  -m "admin@company.com" \
+  -D "curl,jq,systemd" \
+  -p "/usr/bin" \
+  -S sysmon
+```
+
+Creates: `system-monitor_3.2.1_all.deb`, installs script as `sysmon` in `/usr/bin`
+
+### Network Tool Example
+
+```bash
+./To_DEB.sh \
+  -s fakeap.sh \
+  -n fakeap \
+  -v 1.5.0 \
+  -d "Create fake WiFi access points for testing" \
+  -m "security@example.com" \
+  -D "hostapd,dnsmasq"
+```
+
+## Package Structure
+
+Generated packages include:
+
+- **Control file**: Package metadata and dependencies
+- **Postinst script**: Makes installed script executable
+- **Prerm script**: Cleanup during removal
+- **Your script**: Installed to specified path
+
+## Validation
+
+The script validates:
+
+- ✅ Package name format (lowercase, alphanumeric + `-`, `.`, `+`)
+- ✅ Script file existence
+- ✅ Required tools availability
+- ✅ Proper shebang in script (adds if missing)
+
+## Troubleshooting
 
 ### Common Issues
 
-1. **"Missing required tools"**
-   ```bash
-   sudo apt-get install dpkg-dev fakeroot
-   ```
+**Missing tools error:**
+```bash
+sudo apt-get install dpkg-dev fakeroot
+```
 
-2. **"Invalid package name"**
-   - Package names must be lowercase
-   - Use hyphens instead of spaces
-   - Start with alphanumeric characters
+**Permission denied:**
+```bash
+chmod +x To_DEB.sh
+```
 
-3. **"Permission denied"**
-   ```bash
-   chmod +x To_DEB.sh
-   ```
+**Invalid package name:**
+- Use lowercase letters only
+- No spaces or special characters except `-`, `.`, `+`
+- Must start with alphanumeric character
 
-4. **"Script file not found"**
-   - Check the path to your bash script
-   - Ensure the file exists and is readable
+### Package Information
 
-### Debug Mode
+View package details:
+```bash
+dpkg-deb --info package.deb
+dpkg-deb --contents package.deb
+```
 
-For troubleshooting, you can check the temporary build directory before cleanup by modifying the script to comment out the cleanup trap.
+## Output
 
-## 🤝 Contributing
+The script provides colorized output:
 
-Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
+- 🔵 **INFO**: General information
+- 🟢 **SUCCESS**: Operations completed successfully
+- 🟡 **WARNING**: Non-critical issues
+- 🔴 **ERROR**: Critical errors
 
-### Development Setup
+## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Test with various scripts
+5. Submit a pull request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is open source. Feel free to modify and distribute.
 
-## 🙏 Acknowledgments
+## Changelog
 
-- Debian packaging guidelines and best practices
-- The Debian maintainer community for documentation
-- Contributors to the dpkg-deb toolchain
+### v2.0.0
+- Added smart script naming functionality
+- Separated package name from installed script name
+- Added `--script-name` option
+- Improved automatic name derivation
+- Fixed issue with `.deb` suffix in script names
 
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the [Issues](https://github.com/yourusername/bash-to-deb-converter/issues) section
-2. Create a new issue with detailed information
-3. Include your system information and the exact command used
-
----
-
-**Made with ❤️ for the Linux community**
+### v1.0.0
+- Initial release
+- Basic bash to DEB conversion
+- Configurable package metadata
+- Dependency handling
